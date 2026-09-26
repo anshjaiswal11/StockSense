@@ -1,12 +1,18 @@
 # 📦 StockSense — Intelligent Modular Inventory Management System (IMS 2.0)
 
+[![Live Deployment](https://img.shields.io/badge/Live_Deployment-stock--lake--five.vercel.app-059669?style=for-the-badge&logo=vercel&logoColor=white)](https://stock-lake-five.vercel.app)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Verix Live SMS OTP](https://img.shields.io/badge/Verix-Live_SMS_OTP-0284C7?style=for-the-badge&logo=twilio&logoColor=white)](https://stock-lake-five.vercel.app)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Google Gemini](https://img.shields.io/badge/Google_Gemini_AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
 [![Odoo IMS Aligned](https://img.shields.io/badge/Odoo_Spec-Compliant-714B67?style=for-the-badge&logo=odoo&logoColor=white)](https://www.odoo.com/)
 
+> 🌐 **Live Production Application**: [**https://stock-lake-five.vercel.app**](https://stock-lake-five.vercel.app)  
+> 🍃 **Cloud Database**: MongoDB Atlas Integration (`stocksense`) with automated sync  
+> 📱 **Authentication**: Real-Time SMS Phone OTP via Verix Gateway API  
+>
 > **StockSense** is a modular, real-time Inventory Management System (IMS) designed to replace manual registers, error-prone spreadsheets, and scattered tracking methods. Built on an enterprise **double-entry stock movement ledger**, StockSense provides end-to-end visibility across incoming receipts, outgoing delivery orders, internal bin transfers, physical count adjustments, and AI-driven predictive replenishment.
 
 ---
@@ -230,10 +236,20 @@ The optimized production bundle will be generated in the `dist/` directory.
 
 ## ⚙️ Configuration & Environment
 
-StockSense is **100% operational out of the box** without requiring any mandatory API keys or external databases.
+StockSense is configured for full cloud synchronization and real SMS verification:
 
+- **MongoDB Atlas (`MONGODB_URI`)**:
+  Stores all products, operations, ledger moves, and registered user accounts in the `stocksense` database.
+  ```env
+  MONGODB_URI="mongodb+srv://<username>:<password>@cluster0.snoewtu.mongodb.net/stocksense?retryWrites=true&w=majority&appName=Cluster0"
+  ```
+- **Verix Live SMS OTP Gateway (`VITE_VERIX_API_KEY`)**:
+  Dispatches real SMS verification codes to operator mobile devices for signup and self-service password reset.
+  ```env
+  VITE_VERIX_API_KEY="vx_live_MzzLCDSgeBPSgH8GYB2w9yGk0ZKZf6AW_Xc6JbXT6Dg"
+  ```
 - **Google Gemini API (Optional)**: If you would like to enable live generative AI responses in the Copilot, click the 🔑 key icon in the top navigation bar and enter your Google Gemini API Key.
-- **Data Persistence**: All operations, products, and movements are stored in `localStorage`. You can restore the clean initial demo dataset at any time by clicking the 🔄 **Reset Demo Data** button in the navbar.
+- **Local Fallback**: If MongoDB is unreachable, StockSense operates seamlessly using localStorage with automated background retry synchronization.
 
 ---
 
