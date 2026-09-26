@@ -10,26 +10,39 @@ import { AICopilotModal } from './components/ai/AICopilotModal';
 import { BarcodeScannerModal } from './components/scanner/BarcodeScannerModal';
 import { AuthModal } from './components/auth/AuthModal';
 import { OperationModal } from './components/operations/OperationModal';
+import { LandingPageView } from './components/home/LandingPageView';
+import { useAuth } from './context/AuthContext';
 import { OperationType } from './types';
 import { 
   LayoutDashboard, 
   Package, 
   ArrowDownToLine, 
   ArrowUpFromLine, 
-  History, 
-  TrendingUp, 
   ScanLine 
 } from 'lucide-react';
 
 export const App: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  
+  // Primary View Mode: 'landing' (Home page with feature explanations) vs 'dashboard' (IMS App)
+  // Defaults to 'landing' so that anyone clicking the website is first introduced to the features, then logs in!
+  const [viewMode, setViewMode] = useState<'landing' | 'dashboard'>('landing');
+
+  // Dashboard Sub-Tab
   const [currentTab, setCurrentTab] = useState<NavTab>('dashboard');
 
   // Modals
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup' | 'forgot_password'>('login');
   const [isNewOpOpen, setIsNewOpOpen] = useState(false);
   const [newOpType, setNewOpType] = useState<OperationType>('receipt');
+
+  const handleOpenAuthModal = (mode: 'login' | 'signup' | 'forgot_password' = 'login') => {
+    setAuthModalMode(mode);
+    setIsAuthOpen(true);
+  };
 
   const handleOpenNewOperation = (type: OperationType = 'receipt') => {
     setNewOpType(type);
@@ -41,13 +54,42 @@ export const App: React.FC = () => {
     setIsNewOpOpen(true);
   };
 
+  // If in 'landing' view mode, render the Home Page with feature explanation & login/signup
+  if (viewMode === 'landing') {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col text-slate-100">
+        <LandingPageView
+          onGoToDashboard={() => setViewMode('dashboard')}
+          onOpenAuthModal={handleOpenAuthModal}
+        />
+
+        {/* Global Modals in Landing view */}
+        {isAuthOpen && (
+          <AuthModal
+            initialMode={authModalMode}
+            onClose={() => {
+              setIsAuthOpen(false);
+              // If user became authenticated via modal, optionally take them to dashboard
+              if (isAuthenticated) {
+                setViewMode('dashboard');
+              }
+            }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Dashboard / IMS View
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900">
       {/* Top Navigation */}
       <Navbar
         onOpenCopilot={() => setIsCopilotOpen(true)}
         onOpenScanner={() => setIsScannerOpen(true)}
-        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAuth={handleOpenAuthModal}
+        onToggleLanding={() => setViewMode('landing')}
+        showingLanding={false}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -156,7 +198,12 @@ export const App: React.FC = () => {
         />
       )}
 
-      {isAuthOpen && <AuthModal onClose={() => setIsAuthOpen(false)} />}
+      {isAuthOpen && (
+        <AuthModal
+          initialMode={authModalMode}
+          onClose={() => setIsAuthOpen(false)}
+        />
+      )}
 
       {isNewOpOpen && (
         <OperationModal

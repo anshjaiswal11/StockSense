@@ -5,6 +5,7 @@ import {
   ArrowDownToLine,
   ArrowUpFromLine,
   ArrowLeftRight,
+  ArrowRight,
   SlidersHorizontal,
   Plus,
   CheckCircle2,
@@ -121,6 +122,95 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <SlidersHorizontal className="w-4 h-4" />
             <span>Adjust Stock</span>
           </button>
+        </div>
+      </div>
+
+      {/* Excalidraw Core Operational Hub Cards (Receipt & Delivery) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Receipt Hub Card */}
+        <div className="bg-white p-5 rounded-2xl border-2 border-emerald-500/20 shadow-xs hover:border-emerald-500/40 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <ArrowDownToLine className="w-5 h-5 text-emerald-600" />
+                Receipt
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                Inbound Dock
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">
+              Incoming shipments from vendors and supplier dock arrival operations.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <button
+              onClick={() => onNavigateTab('receipts')}
+              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center space-x-1.5"
+            >
+              <span>{kpis.pendingReceiptsCount} TO RECEIVE</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="flex items-center space-x-4 text-xs font-semibold">
+              <div className="text-right">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Late</span>
+                <span className="text-rose-600 font-mono font-bold">
+                  {operations.filter(o => o.type === 'receipt' && o.status !== 'done' && o.scheduledDate && o.scheduledDate < new Date().toISOString().split('T')[0]).length}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Operations</span>
+                <span className="text-slate-700 font-mono font-bold">
+                  {operations.filter(o => o.type === 'receipt').length}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Delivery Hub Card */}
+        <div className="bg-white p-5 rounded-2xl border-2 border-indigo-500/20 shadow-xs hover:border-indigo-500/40 transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <ArrowUpFromLine className="w-5 h-5 text-indigo-600" />
+                Delivery
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                Outbound Dispatch
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">
+              Outgoing shipments, order picking, packaging, and customer dispatches.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <button
+              onClick={() => onNavigateTab('delivery')}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center space-x-1.5"
+            >
+              <span>{kpis.pendingDeliveriesCount} TO DELIVER</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+
+            <div className="flex items-center space-x-4 text-xs font-semibold">
+              <div className="text-right">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Late</span>
+                <span className="text-rose-600 font-mono font-bold">
+                  {operations.filter(o => o.type === 'delivery' && o.status !== 'done' && o.scheduledDate && o.scheduledDate < new Date().toISOString().split('T')[0]).length}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Operations</span>
+                <span className="text-slate-700 font-mono font-bold">
+                  {operations.filter(o => o.type === 'delivery').length}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

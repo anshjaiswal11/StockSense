@@ -18,6 +18,7 @@ import { Product, UnitOfMeasure } from '../../types';
 export const ProductListView: React.FC = () => {
   const {
     products,
+    operations,
     categories,
     locations,
     addProduct,
@@ -231,9 +232,9 @@ export const ProductListView: React.FC = () => {
                 <th className="py-3.5 px-4">SKU / Code</th>
                 <th className="py-3.5 px-4">Product Name</th>
                 <th className="py-3.5 px-4">Category</th>
-                <th className="py-3.5 px-4">Unit Cost</th>
-                <th className="py-3.5 px-4">Total Stock</th>
-                <th className="py-3.5 px-4">Reordering Buffer</th>
+                <th className="py-3.5 px-4">Per Unit Cost</th>
+                <th className="py-3.5 px-4">On Hand</th>
+                <th className="py-3.5 px-4">Free to Use</th>
                 <th className="py-3.5 px-4">Locations</th>
                 <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
@@ -250,6 +251,15 @@ export const ProductListView: React.FC = () => {
                   const isOutOfStock = product.totalStock === 0;
                   const isLowStock = product.totalStock > 0 && product.totalStock <= product.reorderRule.minQuantity;
 
+                  // Calculate Free to Use (On Hand - Reserved in pending deliveries)
+                  const reservedInDeliveries = operations
+                    .filter(o => o.type === 'delivery' && (o.status === 'ready' || o.status === 'waiting'))
+                    .reduce((sum, o) => {
+                      const item = o.items.find(i => i.productId === product.id);
+                      return sum + (item ? item.quantity : 0);
+                    }, 0);
+                  const freeToUse = Math.max(0, product.totalStock - reservedInDeliveries);
+
                   return (
                     <tr key={product.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-4">
@@ -264,7 +274,7 @@ export const ProductListView: React.FC = () => {
                       <td className="py-3.5 px-4 font-medium text-slate-700">
                         {product.category}
                       </td>
-                      <td className="py-3.5 px-4 font-mono">
+                      <td className="py-3.5 px-4 font-mono font-semibold text-slate-900">
                         ${product.unitCost.toFixed(2)}
                       </td>
                       <td className="py-3.5 px-4">
@@ -293,9 +303,10 @@ export const ProductListView: React.FC = () => {
                           )}
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-[11px] text-slate-500">
-                        <div>Min: <strong className="text-slate-700">{product.reorderRule.minQuantity}</strong> {product.uom}</div>
-                        <div>Target: <strong className="text-slate-700">{product.reorderRule.targetReorderQuantity}</strong> {product.uom}</div>
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold font-mono text-emerald-700 text-sm">
+                          {freeToUse} {product.uom}
+                        </span>
                       </td>
                       <td className="py-3.5 px-4">
                         <button

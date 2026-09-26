@@ -65,6 +65,8 @@ export interface StockOperation {
   reference: string; // e.g. WH/IN/0001, WH/OUT/0002, WH/INT/0003, WH/ADJ/0004
   type: OperationType;
   partner?: string; // Supplier name for receipts, Customer for delivery
+  contact?: string; // Partner contact phone / email
+  scheduledDate?: string; // Scheduled date (YYYY-MM-DD)
   sourceLocationId: string;
   destinationLocationId: string;
   items: OperationItem[];
@@ -97,9 +99,24 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  loginId?: string;
+  phoneNumber?: string;
   role: Role;
   avatar?: string;
 }
+
+export interface UserAccount {
+  id: string;
+  loginId: string;       // 6-12 chars, unique
+  email: string;         // unique in database
+  phoneNumber: string;   // unique in database
+  name: string;
+  password: string;      // stored securely
+  role: Role;
+  createdAt: string;
+  phoneVerified: boolean;
+}
+
 
 export interface DashboardKPIs {
   totalProductsCount: number;
