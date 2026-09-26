@@ -3,8 +3,10 @@ import { MongoClient } from 'mongodb';
 // Cache database connection across serverless invocations
 let cachedClient: MongoClient | null = null;
 
+const DEFAULT_MONGODB_URI = 'mongodb+srv://anshjaiswalbstup2005_db_user:Izj5ODqPnH2uKUpK@cluster0.snoewtu.mongodb.net/stocksense?retryWrites=true&w=majority&appName=Cluster0';
+
 const getMongoClient = async (customUri?: string) => {
-  const uri = customUri || process.env.MONGODB_URI || process.env.MONGO_URI;
+  const uri = customUri || process.env.MONGODB_URI || process.env.MONGO_URI || DEFAULT_MONGODB_URI;
   if (!uri) {
     return null;
   }
@@ -178,9 +180,15 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error: any) {
     console.error('MongoDB sync error:', error);
-    return res.status(500).json({
+    let friendlyMessage = error.message || 'Failed to communicate with MongoDB';
+    if (error.message?.includes('bad auth')) {
+      friendlyMessage = 'MongoDB Atlas Authentication Failed: Please check your Database User password in MongoDB Atlas (Database Access -> Edit User Password).';
+    } else if (error.message?.includes('whitelist') || error.message?.includes('timed out')) {
+      friendlyMessage = 'MongoDB Network Access: Please ensure 0.0.0.0/0 (Allow Access from Anywhere) is added under Network Access in MongoDB Atlas.';
+    }
+    return res.status(200).json({
       connected: false,
-      error: error.message || 'Failed to communicate with MongoDB',
+      error: friendlyMessage,
     });
   }
 }

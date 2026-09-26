@@ -24,8 +24,10 @@ export interface MongoSyncResult {
   error?: string;
 }
 
+export const DEFAULT_ATLAS_URI = 'mongodb+srv://anshjaiswalbstup2005_db_user:Izj5ODqPnH2uKUpK@cluster0.snoewtu.mongodb.net/stocksense?retryWrites=true&w=majority&appName=Cluster0';
+
 export const getCustomMongoUri = (): string => {
-  return localStorage.getItem('stocksense_mongo_uri') || '';
+  return localStorage.getItem('stocksense_mongo_uri') || DEFAULT_ATLAS_URI;
 };
 
 export const setCustomMongoUri = (uri: string): void => {
