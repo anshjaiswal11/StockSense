@@ -57,7 +57,7 @@ export const App: React.FC = () => {
   // If in 'landing' view mode, render the Home Page with feature explanation & login/signup
   if (viewMode === 'landing') {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col text-slate-100">
+      <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900">
         <LandingPageView
           onGoToDashboard={() => setViewMode('dashboard')}
           onOpenAuthModal={handleOpenAuthModal}

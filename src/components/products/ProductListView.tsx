@@ -242,8 +242,23 @@ export const ProductListView: React.FC = () => {
             <tbody className="divide-y divide-slate-100">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="text-center py-10 text-slate-400">
-                    No products match the selected criteria.
+                  <td colSpan={8} className="text-center py-16 text-slate-400">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <Package className="w-6 h-6" />
+                      </div>
+                      <p className="text-sm font-bold text-slate-700">No products in inventory yet</p>
+                      <p className="text-xs text-slate-500 max-w-sm">
+                        Get started by adding your first product SKU with initial stock and warehouse rack locations.
+                      </p>
+                      <button
+                        onClick={handleOpenCreate}
+                        className="mt-2 inline-flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>Add First Product</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ) : (

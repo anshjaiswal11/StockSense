@@ -52,7 +52,19 @@ const InventoryContext = createContext<InventoryContextType | undefined>(undefin
 export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('stocksense_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.some(p => p.id === 'prod-1' || p.id === 'prod-2' || p.id === 'prod-3')) {
+        localStorage.removeItem('stocksense_products');
+        localStorage.removeItem('stocksense_operations');
+        localStorage.removeItem('stocksense_ledger');
+        return [];
+      }
+      return parsed;
+    } catch {
+      return [];
+    }
   });
 
   const [warehouses, setWarehouses] = useState<Warehouse[]>(() => {
@@ -67,12 +79,30 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [operations, setOperations] = useState<StockOperation[]>(() => {
     const saved = localStorage.getItem('stocksense_operations');
-    return saved ? JSON.parse(saved) : INITIAL_OPERATIONS;
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.some(o => o.id === 'op-rcpt-001' || o.id === 'op-out-001')) {
+        return [];
+      }
+      return parsed;
+    } catch {
+      return [];
+    }
   });
 
   const [ledger, setLedger] = useState<StockMoveLedger[]>(() => {
     const saved = localStorage.getItem('stocksense_ledger');
-    return saved ? JSON.parse(saved) : INITIAL_LEDGER;
+    if (!saved) return [];
+    try {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.some(l => l.id === 'ledger-001' || l.id === 'ledger-002')) {
+        return [];
+      }
+      return parsed;
+    } catch {
+      return [];
+    }
   });
 
   const [categories, setCategories] = useState<string[]>(() => {
