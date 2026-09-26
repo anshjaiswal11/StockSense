@@ -140,7 +140,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={logout}
                 className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors cursor-pointer"
-                title="Sign out of Verix"
+                title="Sign out of StockSense"
               >
                 <LogOut className="w-4 h-4" />
               </button>

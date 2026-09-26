@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Role, UserAccount } from '../types';
 import { sendVerixOtp, verifyVerixOtp, formatPhoneNumber } from '../services/verixOtpService';
 
+import { saveItemToMongo, fetchAllFromMongo } from '../services/mongoService';
+
 export interface PasswordRulesValidation {
   hasMinLength: boolean; // > 8 characters
   hasLowerCase: boolean;
@@ -38,30 +40,7 @@ interface AuthContextType {
   clearOtpInfo: () => void;
 }
 
-const SEED_USERS: UserAccount[] = [
-  {
-    id: 'usr-manager-1',
-    loginId: 'manager_admin',
-    email: 'manager@stocksense.io',
-    phoneNumber: '+919876543210',
-    name: 'Ansh Jaiswal',
-    password: 'Password@123',
-    role: 'inventory_manager',
-    createdAt: '2026-01-15T09:00:00.000Z',
-    phoneVerified: true,
-  },
-  {
-    id: 'usr-staff-2',
-    loginId: 'staff_ops',
-    email: 'staff@stocksense.io',
-    phoneNumber: '+919123456789',
-    name: 'Vikram Singh',
-    password: 'Password@123',
-    role: 'warehouse_staff',
-    createdAt: '2026-02-10T14:30:00.000Z',
-    phoneVerified: true,
-  },
-];
+const SEED_USERS: UserAccount[] = [];
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -87,36 +66,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const saved = localStorage.getItem('stocksense_user_database');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(u => u.name !== 'Ansh Jaiswal' && u.id !== 'usr-manager-1');
+        }
       } catch (e) {
         console.error('Failed to parse saved user database', e);
       }
     }
-    return SEED_USERS;
+    return [];
   });
 
-  // 2. Persistent Active User
+  // 2. Persistent Active User (Starts logged out)
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('stocksense_active_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.id === 'usr-manager-1' || parsed.name === 'Ansh Jaiswal')) {
+          localStorage.removeItem('stocksense_active_user');
+          return null;
+        }
+        return parsed;
       } catch (e) {
         console.error('Failed to parse active user', e);
       }
     }
-    // Default to manager demo user
-    const defaultAccount = SEED_USERS[0];
-    return {
-      id: defaultAccount.id,
-      name: defaultAccount.name,
-      email: defaultAccount.email,
-      loginId: defaultAccount.loginId,
-      phoneNumber: defaultAccount.phoneNumber,
-      role: defaultAccount.role,
-      avatar: 'AJ',
-    };
+    return null;
   });
+
+  // Hydrate users from MongoDB on mount
+  useEffect(() => {
+    fetchAllFromMongo().then(res => {
+      if (res.success && res.data?.users && Array.isArray(res.data.users)) {
+        setUserDatabase(prev => {
+          const existingIds = new Set(prev.map(u => u.id));
+          const newOnes = res.data.users.filter((u: UserAccount) => !existingIds.has(u.id) && u.name !== 'Ansh Jaiswal');
+          return [...prev, ...newOnes];
+        });
+      }
+    }).catch(() => {});
+  }, []);
 
   // Track active Verix OTP request IDs mapped to phone numbers
   const [phoneRequestIds, setPhoneRequestIds] = useState<Record<string, string>>({}); // formattedPhone -> requestId
@@ -322,6 +312,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setUserDatabase(updatedDb);
+    saveItemToMongo('user', updatedDb[userIndex]).catch(() => {});
 
     return {
       success: true,
@@ -422,6 +413,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     setUserDatabase(prev => [...prev, newAccount]);
+    saveItemToMongo('user', newAccount).catch(() => {});
 
     const activeUser: User = {
       id: newAccount.id,

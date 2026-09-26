@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useInventory } from '../../context/InventoryContext';
+import { useAuth } from '../../context/AuthContext';
 import { OperationType, UnitOfMeasure } from '../../types';
 import { ArrowDownToLine, ArrowUpFromLine, ArrowLeftRight, SlidersHorizontal, Plus, Trash2 } from 'lucide-react';
 
@@ -10,6 +11,7 @@ interface OperationModalProps {
 
 export const OperationModal: React.FC<OperationModalProps> = ({ initialType = 'receipt', onClose }) => {
   const { products, locations, createOperation } = useInventory();
+  const { currentUser } = useAuth();
 
   const [type, setType] = useState<OperationType>(initialType);
   const [partner, setPartner] = useState(
@@ -141,7 +143,9 @@ export const OperationModal: React.FC<OperationModalProps> = ({ initialType = 'r
       destinationLocationId,
       notes,
       status: validateImmediate ? 'done' : 'ready',
-      responsibleUser: 'Ansh Jaiswal (Manager)',
+      responsibleUser: currentUser
+        ? `${currentUser.name} (${currentUser.role === 'inventory_manager' ? 'Manager' : 'Staff'})`
+        : 'Warehouse Staff',
       items: formattedItems,
     });
 

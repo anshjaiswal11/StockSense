@@ -88,11 +88,16 @@ export const LandingPageView: React.FC<LandingPageViewProps> = ({
         <div className="flex items-center space-x-3">
           {isAuthenticated ? (
             <div className="flex items-center space-x-3">
+              {currentUser?.name && (
+                <span className="hidden sm:inline text-xs font-semibold text-slate-700">
+                  {currentUser.name}
+                </span>
+              )}
               <button
                 onClick={onGoToDashboard}
                 className="flex items-center space-x-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
               >
-                <span>Dashboard ({currentUser?.name})</span>
+                <span>Go to Dashboard</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
               <button

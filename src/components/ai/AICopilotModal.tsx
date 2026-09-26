@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useInventory } from '../../context/InventoryContext';
+import { useAuth } from '../../context/AuthContext';
 import { AIService, CopilotResponse } from '../../services/aiService';
 
 interface AICopilotModalProps {
@@ -29,6 +30,7 @@ interface ChatMessage {
 
 export const AICopilotModal: React.FC<AICopilotModalProps> = ({ onClose, onNavigateTab }) => {
   const { products, warehouses, operations, ledger, geminiApiKey, autoCreateReorderReceipt } = useInventory();
+  const { currentUser } = useAuth();
 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -36,7 +38,7 @@ export const AICopilotModal: React.FC<AICopilotModalProps> = ({ onClose, onNavig
     {
       id: 'm-1',
       sender: 'ai',
-      text: "👋 Hello Ansh! I am **StockSense AI**, your inventory intelligence co-pilot. I have indexed your products, warehouse stock levels, pending dock shipments, and ledger history. What would you like to check?",
+      text: `👋 Hello ${currentUser?.name ? currentUser.name.split(' ')[0] : 'there'}! I am **StockSense AI**, your inventory intelligence co-pilot. I have indexed your products, warehouse stock levels, pending dock shipments, and ledger history. What would you like to check?`,
       actions: [
         { label: 'Check Low Stock & Reorders', actionType: 'navigate_products' },
         { label: 'Do we have enough Steel Rods?', actionType: 'navigate_receipts' },

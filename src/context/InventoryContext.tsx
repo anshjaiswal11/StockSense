@@ -18,6 +18,7 @@ import {
   INITIAL_LEDGER,
   INITIAL_CATEGORIES,
 } from '../data/initialData';
+import { saveAllToMongo, fetchAllFromMongo } from '../services/mongoService';
 
 interface InventoryContextType {
   products: Product[];
@@ -45,6 +46,8 @@ interface InventoryContextType {
   resetDemoData: () => void;
   exportLedgerToCSV: () => void;
   getLocationName: (locationId: string) => string;
+  syncWithMongoDB: () => Promise<{ success: boolean; message: string }>;
+  mongoConnected: boolean;
 }
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
@@ -142,6 +145,50 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     localStorage.setItem('stocksense_gemini_key', geminiApiKey);
   }, [geminiApiKey]);
+
+  const [mongoConnected, setMongoConnected] = useState<boolean>(false);
+
+  // Initial hydration from MongoDB
+  useEffect(() => {
+    fetchAllFromMongo().then(res => {
+      if (res.success && res.data) {
+        setMongoConnected(true);
+        if (Array.isArray(res.data.products) && res.data.products.length > 0) {
+          setProducts(res.data.products);
+        }
+        if (Array.isArray(res.data.operations) && res.data.operations.length > 0) {
+          setOperations(res.data.operations);
+        }
+        if (Array.isArray(res.data.ledger) && res.data.ledger.length > 0) {
+          setLedger(res.data.ledger);
+        }
+        if (Array.isArray(res.data.warehouses) && res.data.warehouses.length > 0) {
+          setWarehouses(res.data.warehouses);
+        }
+        if (Array.isArray(res.data.locations) && res.data.locations.length > 0) {
+          setLocations(res.data.locations);
+        }
+      } else {
+        setMongoConnected(!!res.connected);
+      }
+    }).catch(() => setMongoConnected(false));
+  }, []);
+
+  // Debounced auto-sync to MongoDB
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      saveAllToMongo({ products, operations, ledger, warehouses, locations }).then(res => {
+        setMongoConnected(res.connected);
+      }).catch(() => setMongoConnected(false));
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [products, operations, ledger, warehouses, locations]);
+
+  const syncWithMongoDB = async () => {
+    const res = await saveAllToMongo({ products, operations, ledger, warehouses, locations });
+    setMongoConnected(res.connected);
+    return { success: res.success, message: res.message };
+  };
 
   // Dynamic KPIs calculated in real-time
   const kpis: DashboardKPIs = useMemo(() => {
@@ -450,7 +497,7 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   // Update Operation Status
-  const updateOperationStatus = (id: string, newStatus: OperationStatus, userName = 'Ansh Jaiswal (Manager)') => {
+  const updateOperationStatus = (id: string, newStatus: OperationStatus, userName = 'Warehouse Staff') => {
     const op = operations.find(o => o.id === id);
     if (!op) return { success: false, error: 'Operation not found' };
 
@@ -595,6 +642,8 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         resetDemoData,
         exportLedgerToCSV,
         getLocationName,
+        syncWithMongoDB,
+        mongoConnected,
       }}
     >
       {children}
